@@ -104,6 +104,7 @@ for epoch in range(args.num_epochs):
         # Backprop and optimize
         optimizer.zero_grad()
         loss.backward()
+        optimizer.step()
         total_loss += loss.item()
     
     avg_loss = total_loss / len(data_loader)

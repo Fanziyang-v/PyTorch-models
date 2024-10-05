@@ -114,6 +114,7 @@ for epoch in range(args.num_epochs):
 Epoch: [{epoch + 1}/{args.num_epochs}]
 Loss: {avg_loss:.4f}
 Accuracy: {100 * avg_acc:.4f} %
+============================
 ''')
     writer.add_scalar('Loss', avg_loss, epoch + 1)
     writer.add_scalar('Accuracy', avg_acc, epoch + 1)

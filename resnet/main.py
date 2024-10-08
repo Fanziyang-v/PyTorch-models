@@ -115,8 +115,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--lr', type=float, default=0.001, help='learning rate for SGD optimizer')
 parser.add_argument('--momentum', type=float, default=0.9, help='momentum term for SGD optimizer')
 parser.add_argument('--batch_size', type=int, default=64, help='mini-batch size')
-parser.add_argument('--num_epochs', type=int, default=100, help='number of training epochs')
-parser.add_argument('--ckpt_dir', type=str, default='checkpoints', help='directory for saving model checkpoints')
+parser.add_argument('--num_epochs', type=int, default=80, help='number of training epochs')
 parser.add_argument('--interval', type=int, default=10, help='number of epochs between validating on test dataset')
 parser.add_argument('--logdir', type=str, default='runs', help='directory for saving running log')
 args = parser.parse_args()
@@ -129,10 +128,12 @@ if not os.path.exists(args.ckpt_dir):
     os.makedirs(args.ckpt_dir)
 
 # CIFAR-10 dataset.
-data = datasets.CIFAR10(root='../data', train=True, transform=transform, download=True)
+training_data = datasets.CIFAR10(root='../data', train=True, transform=transform, download=True)
+test_data = datasets.CIFAR10(root='../data', train=False, transform=transform)
 
 # Data loader.
-data_loader = DataLoader(dataset=data, batch_size=args.batch_size, shuffle=True)
+train_dataloader = DataLoader(dataset=training_data, batch_size=args.batch_size, shuffle=True)
+test_dataloader = DataLoader(dataset=test_data, batch_size=args.batch_size, shuffle=False)
 
 # ResNet.
 model = ResNet(num_channels=3, num_classes=10, layers=[3, 3, 3]).to(device)
@@ -143,8 +144,9 @@ optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, momentum=args.moment
 
 # Start training.
 for epoch in range(args.num_epochs):
+    model.train()
     total_loss = total_accuracy = 0
-    for images, labels in data_loader:
+    for images, labels in train_dataloader:
         images: Tensor = images.to(device)
         labels: Tensor = labels.to(device)
 
@@ -160,8 +162,8 @@ for epoch in range(args.num_epochs):
         optimizer.step()
         total_loss += loss.item()
     
-    avg_loss = total_loss / len(data_loader)
-    avg_acc = total_accuracy / len(data_loader)
+    avg_loss = total_loss / len(train_dataloader)
+    avg_acc = total_accuracy / len(train_dataloader)
     # log average loss and accuracy.
     print(f'''
 ============================
@@ -173,5 +175,23 @@ Accuracy: {100 * avg_acc:.4f} %
     writer.add_scalar('Loss', avg_loss, epoch + 1)
     writer.add_scalar('Accuracy', avg_acc, epoch + 1)
 
+    if (epoch + 1) % args.interval == 0:
+        model.eval()
+        num_correct = total = 0
+        for images, labels in test_dataloader:
+            images: Tensor = images.to(device)
+            labels: Tensor = labels.to(device)
+
+            outputs: Tensor = model(images)
+            ypred = torch.argmax(outputs, dim=1)
+            num_correct += torch.sum((ypred == labels).float())
+            total += len(images)
+        test_acc = num_correct / total
+        print(f'''
+============================
+Testset Accuracy: {100 * test_acc:.4f} %
+============================
+''')
+        
 # Save model checkpoint.
 torch.save(model.state_dict(), os.path.join(args.ckpt_dir, 'resnet.ckpt'))

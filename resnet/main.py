@@ -123,10 +123,6 @@ print(args)
 
 writer = SummaryWriter(args.logdir)
 
-# Create directory if not exists.
-if not os.path.exists(args.ckpt_dir):
-    os.makedirs(args.ckpt_dir)
-
 # CIFAR-10 dataset.
 training_data = datasets.CIFAR10(root='../data', train=True, transform=transform, download=True)
 test_data = datasets.CIFAR10(root='../data', train=False, transform=transform)
@@ -194,4 +190,4 @@ Testset Accuracy: {100 * test_acc:.4f} %
 ''')
         
 # Save model checkpoint.
-torch.save(model.state_dict(), os.path.join(args.ckpt_dir, 'resnet.ckpt'))
+torch.save(model.state_dict(), 'resnet.ckpt')

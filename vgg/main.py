@@ -88,7 +88,7 @@ parser.add_argument('--lr', type=float, default=0.001, help='learning rate for S
 parser.add_argument('--momentum', type=float, default=0.9, help='momentum term for SGD optimizer')
 parser.add_argument('--weight_decay', type=float, default=0.0005, help='L2 weight decay term')
 parser.add_argument('--batch_size', type=int, default=128, help='mini-batch size')
-parser.add_argument('--num_epochs', type=int, default=100, help='number of training epochs')
+parser.add_argument('--num_epochs', type=int, default=60, help='number of training epochs')
 parser.add_argument('--interval', type=int, default=10, help='number of epochs between validating on test dataset')
 parser.add_argument('--logdir', type=str, default='runs', help='directory for saving running log')
 args = parser.parse_args()

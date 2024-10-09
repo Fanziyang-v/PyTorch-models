@@ -61,10 +61,11 @@ parser.add_argument('--num_epochs', type=int, default=100, help='number of train
 parser.add_argument('--dataset', type=str, default='MNIST', help='dataset(MNIST | FashionMNIST)')
 parser.add_argument('--interval', type=int, default=10, help='number of epochs between validating on test dataset')
 parser.add_argument('--logdir', type=str, default='runs', help='directory for saving running log')
+parser.add_argument('--ckpt_dir', type=str, default=str, help='directory for saving model checkpoints')
 args = parser.parse_args()
 print(args)
 
-writer = SummaryWriter(args.logdir)
+writer = SummaryWriter(os.path.join(args.logdir, args.dataset))
 
 # MNIST dataset.
 training_data = datasets.MNIST(root='../data', train=True, transform=transform, download=True)
@@ -132,4 +133,4 @@ Testset Accuracy: {100 * test_acc:.4f} %
 ''')
 
 # Save model checkpoint.
-torch.save(model.state_dict(), 'lenet.ckpt')
+torch.save(model.state_dict(), os.path.join(args.ckpt_dir, args.dataset, 'lenet.ckpt'))

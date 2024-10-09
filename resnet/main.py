@@ -188,6 +188,6 @@ Accuracy: {100 * avg_acc:.4f} %
 Testset Accuracy: {100 * test_acc:.4f} %
 ============================
 ''')
-        
+
 # Save model checkpoint.
 torch.save(model.state_dict(), 'resnet.ckpt')

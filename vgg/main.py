@@ -51,7 +51,7 @@ class VGG(nn.Module):
         Returns:
             list: a list of modules.
         """
-        return [nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=1, padding=1), nn.BatchNorm2d(out_channels), nn.ReLU()]
+        return [nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=1, padding=1), nn.ReLU()]
 
     def __block(self, in_channels: int, out_channels: int, num_convs: int) -> list[nn.Module]:
         """Construct a block which has architecture: [conv - batchnorm - relu] x num_convs - max pool.

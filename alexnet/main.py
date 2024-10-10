@@ -7,7 +7,10 @@ from torch.utils.tensorboard import SummaryWriter
 from torchvision import datasets, transforms
 
 class AlexNet(nn.Module):
-    """AlexNet for CIFAR-10."""
+    """AlexNet.
+    
+    Architecture: [conv - relu - max pool] x 2 - [conv - relu] x 3 - max pool - [affine - dropout] x 2 - affine - softmax
+    """
     def __init__(self, num_channels: int, num_classes: int=10) -> None:
         """Initialize AlexNet.
 
@@ -62,14 +65,18 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--lr', type=float, default=0.001, help='learning rate for SGD optimizer')
 parser.add_argument('--momentum', type=float, default=0.9, help='momentum term for SGD optimizer')
 parser.add_argument('--batch_size', type=int, default=64, help='mini-batch size')
-parser.add_argument('--num_epochs', type=int, default=80, help='number of training epochs')
+parser.add_argument('--num_epochs', type=int, default=10, help='number of training epochs')
 parser.add_argument('--dataset', type=str, default='MNIST', help='dataset(MNIST | FashionMNIST | CIFAR10)')
-parser.add_argument('--interval', type=int, default=10, help='number of epochs between validating on test dataset')
+parser.add_argument('--interval', type=int, default=2, help='number of epochs between validating on test dataset')
 parser.add_argument('--logdir', type=str, default='runs', help='directory for saving running log')
 parser.add_argument('--ckpt_dir', type=str, default='checkpoints', help='directory for saving model checkpoint')
 args = parser.parse_args()
 
 writer = SummaryWriter(os.path.join(args.logdir, args.dataset))
+
+# Create folder if not exists.
+if not os.path.exists(os.path.join(args.ckpt_dir, args.dataset)):
+    os.makedirs(os.path.join(args.ckpt_dir, args.dataset))
 
 # Dataset.
 if args.dataset == 'MNIST':
@@ -147,6 +154,7 @@ Accuracy: {100 * avg_acc:.4f} %
 Testset Accuracy: {100 * test_acc:.4f} %
 ============================
 ''')
+        writer.add_scalar('Test Accuracy', test_acc, epoch + 1)
 
 # Save model checkpoint.
 torch.save(model.state_dict(), os.path.join(args.ckpt_dir, args.dataset, 'alexnet.ckpt'))

@@ -9,7 +9,7 @@ from torchvision import datasets, transforms
 
 class ResNet(nn.Module):
     """ResNet for CIFAR-10."""
-    def __init__(self, num_channels: int, num_classes: int, layers: list[int]=[3, 3, 3]) -> None:
+    def __init__(self, num_channels: int, num_classes: int=10, layers: list[int]=[3, 3, 3]) -> None:
         """Initialize ResNet.
 
         Args:
@@ -101,10 +101,14 @@ def conv3x3(in_channels: int, out_channels: int, stride: int=1) -> nn.Module:
                      stride=stride, padding=1)
 
 # Image processing.
-transform = transforms.Compose([
+transform_cifar = transforms.Compose([
     transforms.Pad(4),
     transforms.RandomHorizontalFlip(),
     transforms.RandomCrop(32),
+    transforms.ToTensor()])
+
+transform_mnist = transforms.Compose([
+    transforms.Resize(32),
     transforms.ToTensor()])
 
 # device configuration.
@@ -116,23 +120,40 @@ parser.add_argument('--lr', type=float, default=0.001, help='learning rate for S
 parser.add_argument('--momentum', type=float, default=0.9, help='momentum term for SGD optimizer')
 parser.add_argument('--batch_size', type=int, default=64, help='mini-batch size')
 parser.add_argument('--num_epochs', type=int, default=80, help='number of training epochs')
+parser.add_argument('--dataset', type=str, default='CIFAR10', help='dataset(MNIST | FashionMNIST | CIFAR10)')
 parser.add_argument('--interval', type=int, default=10, help='number of epochs between validating on test dataset')
 parser.add_argument('--logdir', type=str, default='runs', help='directory for saving running log')
+parser.add_argument('--ckpt_dir', type=str, default='checkpoints', help='directory for saving model checkpoints')
 args = parser.parse_args()
 print(args)
 
 writer = SummaryWriter(args.logdir)
 
-# CIFAR-10 dataset.
-training_data = datasets.CIFAR10(root='../data', train=True, transform=transform, download=True)
-test_data = datasets.CIFAR10(root='../data', train=False, transform=transform)
+# Create folder if not exists.
+if not os.path.exists(os.path.join(args.ckpt_dir, args.dataset)):
+    os.makedirs(os.path.join(args.ckpt_dir, args.dataset))
+
+# dataset.
+if args.dataset == 'MNIST':
+    training_data = datasets.MNIST(root='../data', train=True, transform=transform_mnist, download=True)
+    test_data = datasets.MNIST(root='../data', train=False, transform=transform_mnist)
+elif args.dataset == 'FashionMNIST':
+    training_data = datasets.FashionMNIST(root='../data', train=True, transform=transform_mnist, download=True)
+    test_data = datasets.FashionMNIST(root='../data', train=False, transform=transform_mnist)
+elif args.dataset == 'CIFAR10':
+    training_data = datasets.CIFAR10(root='../data', train=True, transform=transform_cifar, download=True)
+    test_data = datasets.CIFAR10(root='../data', train=False, transform=transform_mnist)
+else:
+    raise Exception(f'Unkown dataset: {args.dataset}. Support dataset: (MNIST | FashionMNIST | CIFAR10). Default is CIFAR10')
 
 # Data loader.
 train_dataloader = DataLoader(dataset=training_data, batch_size=args.batch_size, shuffle=True)
 test_dataloader = DataLoader(dataset=test_data, batch_size=args.batch_size, shuffle=False)
 
+num_channels = 3 if args.dataset == 'CIFAR10' else 1
+
 # ResNet.
-model = ResNet(num_channels=3, num_classes=10, layers=[3, 3, 3]).to(device)
+model = ResNet(num_channels=num_channels, num_classes=10, layers=[3, 3, 3]).to(device)
 
 # Loss and optimizer.
 criterion = nn.CrossEntropyLoss().to(device)
@@ -188,6 +209,7 @@ Accuracy: {100 * avg_acc:.4f} %
 Testset Accuracy: {100 * test_acc:.4f} %
 ============================
 ''')
+        writer.add_scalar('Test Accuracy', test_acc, epoch + 1)
 
 # Save model checkpoint.
-torch.save(model.state_dict(), 'resnet.ckpt')
+torch.save(model.state_dict(), os.path.join(args.ckpt_dir, args.dataset, 'resnet.ckpt'))

@@ -135,6 +135,7 @@ Accuracy: {100 * avg_acc:.4f} %
 Testset Accuracy: {100 * test_acc:.4f} %
 ============================
 ''')
+        writer.add_scalar('Test Accuracy', test_acc, epoch + 1)
 
 # Save model checkpoint.
 torch.save(model.state_dict(), os.path.join(args.ckpt_dir, args.dataset, 'lenet.ckpt'))

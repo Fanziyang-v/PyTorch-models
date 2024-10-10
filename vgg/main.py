@@ -8,7 +8,7 @@ from torchvision import datasets, transforms
 
 
 class VGG(nn.Module):
-    """VGG-16 for CIFAR-10"""
+    """VGG Net with 16 weight layers."""
     def __init__(self, num_channels: int, num_classes: int=10) -> None:
         """Initialize VGG Net.
         
@@ -24,7 +24,7 @@ class VGG(nn.Module):
             VGGBlock(256, 512, num_convs=3),
             VGGBlock(512, 512, num_convs=3),
             nn.Flatten(),
-            nn.Linear(512, 4096), nn.ReLU(), nn.Dropout(),
+            nn.Linear(512 * 7 * 7, 4096), nn.ReLU(), nn.Dropout(),
             nn.Linear(4096, 4096), nn.ReLU(), nn.Dropout(),
             nn.Linear(4096, num_classes))
 
@@ -87,14 +87,13 @@ def conv3x3(in_channels: int, out_channels: int) -> list[nn.Module]:
 
 # Image processing.
 transform_cifar = transforms.Compose([
-    transforms.Pad(4),
+    transforms.Resize(224),
     transforms.RandomHorizontalFlip(),
-    transforms.RandomCrop(32),
     transforms.ToTensor(),
     transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
 
 transform_mnist = transforms.Compose([
-    transforms.Resize(32),
+    transforms.Resize(224),
     transforms.ToTensor(),
     transforms.Normalize(mean=(0.5), std=(0.5))])
 

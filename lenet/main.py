@@ -61,11 +61,15 @@ parser.add_argument('--num_epochs', type=int, default=100, help='number of train
 parser.add_argument('--dataset', type=str, default='MNIST', help='dataset(MNIST | FashionMNIST)')
 parser.add_argument('--interval', type=int, default=10, help='number of epochs between validating on test dataset')
 parser.add_argument('--logdir', type=str, default='runs', help='directory for saving running log')
-parser.add_argument('--ckpt_dir', type=str, default=str, help='directory for saving model checkpoints')
+parser.add_argument('--ckpt_dir', type=str, default='checkpoints', help='directory for saving model checkpoints')
 args = parser.parse_args()
 print(args)
 
 writer = SummaryWriter(os.path.join(args.logdir, args.dataset))
+
+# Create folder if not exists
+if not os.path.exists(os.path.join(args.ckpt_dir, args.dataset)):
+    os.makedirs(os.path.join(args.ckpt_dir, args.dataset))
 
 # MNIST dataset.
 training_data = datasets.MNIST(root='../data', train=True, transform=transform, download=True)

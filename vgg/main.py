@@ -73,7 +73,7 @@ class VGGBlock(nn.Module):
 
 
 def conv3x3(in_channels: int, out_channels: int) -> list[nn.Module]:
-    """Construct a block with architecture: conv - batchnorm - relu
+    """Construct a block with architecture: conv - relu
     
     Args:
         in_channels(int): number of channels of input feature map.
